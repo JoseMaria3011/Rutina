@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rutina Comedor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;600&family=Work+Sans:wght@400;500&display=swap');
+
+  :root{
+    --bg: #1C1B19;
+    --bg-soft: #242220;
+    --cream: #EDE8DF;
+    --cream-dim: #A9A39640;
+    --cream-dim2: #9C9689;
+    --sage: #8FA381;
+    --ochre: #B8783D;
+    --line: #35322E;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html,body{
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Work Sans', sans-serif;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .app{
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    width:100vw;
+  }
+
+  /* ---------- SETUP SCREEN ---------- */
+  .setup{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+    gap: 2.2vh;
+    padding: 4vh;
+    text-align:center;
+  }
+  .setup .eyebrow{
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    color: var(--sage);
+    font-weight: 500;
+  }
+  .setup h1{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    letter-spacing: 0.01em;
+  }
+  .week-grid{
+    display:flex;
+    gap: 1.2vw;
+    flex-wrap: wrap;
+    justify-content:center;
+    margin-top: 1.5vh;
+  }
+  .week-btn{
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    color: var(--cream);
+    padding: 1.4vh 1.6vw;
+    border-radius: 10px;
+    font-family:'Oswald', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor:pointer;
+    min-width: 160px;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .week-btn:hover, .week-btn:focus{
+    border-color: var(--sage);
+    outline: none;
+    transform: translateY(-2px);
+  }
+  .week-btn .phase-label{
+    display:block;
+    font-family:'Work Sans', sans-serif;
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--cream-dim2);
+    margin-top: 0.3vh;
+    text-transform: none;
+    letter-spacing: 0.02em;
+  }
+  .hint{
+    color: var(--cream-dim2);
+    font-size: 0.9rem;
+    max-width: 520px;
+    line-height:1.5;
+  }
+
+  /* ---------- PREP SCREEN ---------- */
+  .prep{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+    gap: 2vh;
+    text-align:center;
+  }
+  .prep.active{ display:flex; }
+  .prep .eyebrow{
+    letter-spacing: 0.3em;
+    text-transform:uppercase;
+    font-size:0.8rem;
+    color: var(--ochre);
+  }
+  .prep-next{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size: clamp(2rem, 5vw, 3.6rem);
+  }
+  .prep-num{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:600;
+    font-size: clamp(3.5rem, 9vw, 6rem);
+    color: var(--ochre);
+  }
+
+  /* ---------- SESSION SCREEN ---------- */
+  .session{
+    display:none;
+    flex-direction:column;
+    height:100%;
+    padding: 3vh 5vw;
+  }
+  .session.active{ display:flex; }
+
+  .top-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+  }
+  .phase-tag{
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    font-size:0.75rem;
+    color: var(--sage);
+  }
+  .round-indicator{
+    display:flex;
+    gap: 6px;
+  }
+  .round-dot{
+    width:10px; height:10px; border-radius:50%;
+    background: var(--line);
+  }
+  .round-dot.done{ background: var(--sage); }
+  .round-dot.current{ background: var(--ochre); }
+
+  .main-area{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 6vw;
+  }
+
+  .exercise-name{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size: clamp(2.4rem, 6vw, 4.6rem);
+    line-height:1.05;
+    max-width: 40vw;
+  }
+  .exercise-sub{
+    margin-top: 1.5vh;
+    color: var(--cream-dim2);
+    font-size: 1.1rem;
+    max-width: 34vw;
+    line-height:1.5;
+  }
+  .exercise-cue{
+    margin-top: 2vh;
+    display:inline-block;
+    padding: 0.6vh 1vw;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--ochre);
+  }
+
+  .timer-wrap{
+    position:relative;
+    width: 34vh;
+    height: 34vh;
+    flex-shrink:0;
+  }
+  svg{ transform: rotate(-90deg); width:100%; height:100%; }
+  .ring-bg{ fill:none; stroke:var(--line); stroke-width:5%; }
+  .ring-fg{
+    fill:none;
+    stroke: var(--sage);
+    stroke-width:5%;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.25s linear, stroke 0.4s ease;
+  }
+  .ring-fg.rest{ stroke: var(--ochre); }
+
+  .timer-center{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .timer-num{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:600;
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    font-variant-numeric: tabular-nums;
+  }
+  .timer-label{
+    text-transform:uppercase;
+    letter-spacing:0.25em;
+    font-size:0.75rem;
+    color: var(--cream-dim2);
+    margin-top:0.6vh;
+  }
+
+  .silhouette{
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 1.5vh;
+  }
+  .silhouette svg{ transform:none; width:100%; height:100%; }
+
+  .bottom-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding-top: 2vh;
+  }
+  .next-up{
+    color: var(--cream-dim2);
+    font-size: 0.95rem;
+  }
+  .next-up b{ color: var(--cream); font-weight:600; }
+
+  .controls{
+    display:flex;
+    gap: 1vw;
+  }
+  .ctrl-btn{
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    color: var(--cream);
+    padding: 1.2vh 1.6vw;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor:pointer;
+    font-family:'Work Sans', sans-serif;
+  }
+  .ctrl-btn:hover, .ctrl-btn:focus{ border-color: var(--sage); outline:none; }
+  .ctrl-btn.primary{ background: var(--sage); color: var(--bg); border-color: var(--sage); font-weight:600; }
+
+  /* ---------- DONE SCREEN ---------- */
+  .done{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+    gap: 2vh;
+    text-align:center;
+  }
+  .done.active{ display:flex; }
+  .done h2{
+    font-family:'Oswald', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight:700;
+  }
+  .done p{ color: var(--cream-dim2); max-width: 480px; }
+
+  @media (max-width: 900px){
+    .main-area{ flex-direction:column; gap:3vh; }
+    .exercise-name, .exercise-sub{ max-width: 90vw; text-align:center; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SETUP -->
+  <div class="setup" id="setup">
+    <div class="eyebrow">Rutina de comedor · sin herramientas</div>
+    <h1>¿Qué semana toca?</h1>
+    <div class="hint">15 minutos, 3 días fijos. Elige la fase en la que estás — si no lo sabes, empieza por la Fase 1.</div>
+    <div class="week-grid" id="weekGrid"></div>
+  </div>
+
+  <!-- PREP -->
+  <div class="prep" id="prep">
+    <div class="eyebrow">Prepárate</div>
+    <div class="prep-next" id="prepNext">Sentadilla a silla</div>
+    <div class="prep-num" id="prepNum">5</div>
+  </div>
+
+  <!-- SESSION -->
+  <div class="session" id="session">
+    <div class="top-row">
+      <div class="phase-tag" id="phaseTag">Fase 1 · Full body</div>
+      <div class="round-indicator" id="roundIndicator"></div>
+    </div>
+
+    <div class="main-area">
+      <div>
+        <div class="exercise-name" id="exName">Sentadilla a silla</div>
+        <div class="exercise-sub" id="exSub">Baja el glúteo hasta rozar el asiento, sin sentarte del todo. Espalda recta.</div>
+        <div class="exercise-cue" id="exCue">Cuida: rodillas — no las dejes pasar la punta del pie</div>
+      </div>
+
+      <div class="timer-wrap">
+        <svg viewBox="0 0 100 100">
+          <circle class="ring-bg" cx="50" cy="50" r="45"></circle>
+          <circle class="ring-fg" id="ringFg" cx="50" cy="50" r="45"
+            stroke-dasharray="282.7" stroke-dashoffset="0"></circle>
+        </svg>
+        <div class="timer-center">
+          <div class="silhouette" id="silhouette"></div>
+          <div class="timer-num" id="timerNum">30</div>
+          <div class="timer-label" id="timerLabel">esfuerzo</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-row">
+      <div class="next-up" id="nextUp">Siguiente: <b>Flexión inclinada</b></div>
+      <div class="controls">
+        <button class="ctrl-btn" id="backBtn">← Cambiar semana</button>
+        <button class="ctrl-btn" id="pauseBtn">Pausa</button>
+        <button class="ctrl-btn primary" id="skipBtn">Saltar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DONE -->
+  <div class="done" id="done">
+    <div class="eyebrow" style="color:var(--sage)">Sesión completada</div>
+    <h2 id="doneMsg">Bien hecho.</h2>
+    <p>Constancia por encima de intensidad. La próxima sesión cuenta más que esta.</p>
+    <button class="ctrl-btn primary" id="restartBtn" style="margin-top:1.5vh">Volver al inicio</button>
+  </div>
+
+</div>
+
+<script>
+/* ============ DATOS DE LA RUTINA ============ */
+// Cada ejercicio: nombre, instrucción corta, cuidado articular, segundos de trabajo, segundos de descanso, tipo de silueta
+const EX = {
+  sillaSquat: { name:"Sentadilla a silla", sub:"Baja el glúteo hasta rozar el asiento, sin sentarte del todo. Espalda recta.", cue:"Cuida: rodillas — no las dejes pasar la punta del pie", pose:"squat" },
+  flexionInclinada: { name:"Flexión inclinada", sub:"Manos en la mesa o encimera, cuerpo en línea recta, baja el pecho hacia el borde.", cue:"Cuida: codos — pegados al cuerpo, no abiertos en cruz", pose:"pushup" },
+  puenteGluteo: { name:"Puente de glúteo", sub:"Tumbado boca arriba, pies apoyados, sube la cadera apretando glúteo.", cue:"Cuida: lumbar — no arquees de más arriba", pose:"bridge" },
+  planchaAntebrazo: { name:"Plancha en antebrazos", sub:"Apoyo en antebrazos, cuerpo recto de cabeza a talón, aprieta abdomen.", cue:"Cuida: cadera — no la dejes caer ni la subas de más", pose:"plank" },
+  zancadaEstatica: { name:"Zancada estática", sub:"Un pie adelante, baja recto sin desplazarte, rodilla trasera no toca el suelo.", cue:"Cuida: rodilla delantera — alineada con el pie", pose:"lunge" },
+  elevacionTalones: { name:"Elevación de talones", sub:"De pie, sube sobre las puntas de los pies despacio, baja controlado.", cue:"Suave con el tobillo — sin rebote", pose:"calf" },
+  superman: { name:"Superman", sub:"Tumbado boca abajo, eleva brazos y piernas a la vez, suave, sin tirón.", cue:"Cuida: lumbar — rango pequeño, sin forzar", pose:"superman" },
+  gluteoLateral: { name:"Patada de glúteo lateral", sub:"De pie o a cuatro patas, eleva la pierna hacia el lateral con control.", cue:"Cadera estable, sin balanceo", pose:"lateral" },
+  abdomenBicicleta: { name:"Abdomen bicicleta suave", sub:"Tumbado, lleva codo a rodilla contraria despacio, sin tirar del cuello.", cue:"Cuida: cervicales — no tires del cuello con las manos", pose:"bicycle" },
+  fondoSilla: { name:"Fondo de tríceps en silla", sub:"Manos en el borde del asiento, baja el cuerpo doblando codos poco.", cue:"Cuida: codos — rango corto, sin bloquear al subir", pose:"dip" },
+  curlIsometrico: { name:"Curl isométrico con toalla", sub:"Tira de una toalla con ambas manos en tensión, sin soltar, brazo a 90°.", cue:"Tensión suave y constante, sin picos bruscos", pose:"curl" },
+  pechoIsometrico: { name:"Press isométrico de pecho", sub:"Junta las palmas delante del pecho y empuja con fuerza moderada.", cue:"Suave, sin aguantar la respiración", pose:"press" }
+};
+
+// Fases de la rutina
+const PHASES = {
+  1: {
+    label: "Fase 1 · Full body (semanas 1-2)",
+    rounds: 3,
+    work: 30, rest: 15,
+    circuit: ["sillaSquat","flexionInclinada","puenteGluteo","planchaAntebrazo","zancadaEstatica"]
+  },
+  2: {
+    label: "Fase 2 · Full body+ (semanas 3-4)",
+    rounds: 4,
+    work: 35, rest: 15,
+    circuit: ["sillaSquat","flexionInclinada","puenteGluteo","planchaAntebrazo","zancadaEstatica","elevacionTalones"]
+  },
+  3: {
+    label: "Fase 3A · Glúteos y muslos (semanas 5-6)",
+    rounds: 3,
+    work: 35, rest: 15,
+    circuit: ["sillaSquat","zancadaEstatica","puenteGluteo","gluteoLateral","elevacionTalones"]
+  },
+  4: {
+    label: "Fase 3B · Abdomen y pecho (semanas 5-6)",
+    rounds: 3,
+    work: 35, rest: 15,
+    circuit: ["planchaAntebrazo","abdomenBicicleta","flexionInclinada","pechoIsometrico","superman"]
+  },
+  5: {
+    label: "Fase 3C · Brazos y antebrazos (semanas 5-6)",
+    rounds: 3,
+    work: 30, rest: 15,
+    circuit: ["fondoSilla","curlIsometrico","flexionInclinada","pechoIsometrico","planchaAntebrazo"]
+  }
+};
+
+/* ============ SILUETAS SVG SIMPLES (stick figures) ============ */
+const POSES = {
+  squat: `<svg viewBox="0 0 100 100"><circle cx="50" cy="22" r="9" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M50 31 L50 55 M50 55 L35 75 M50 55 L65 75 M40 40 L20 55 M60 40 L80 55" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  pushup: `<svg viewBox="0 0 100 100"><circle cx="20" cy="45" r="8" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M28 48 L75 60 M40 50 L30 70 M60 55 L55 75 M35 50 L25 35" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  bridge: `<svg viewBox="0 0 100 100"><circle cx="20" cy="75" r="8" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M28 75 L55 55 L80 75 M55 55 L55 40 M35 75 L35 90 M75 75 L75 90" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  plank: `<svg viewBox="0 0 100 100"><circle cx="18" cy="55" r="8" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M26 58 L82 62 M35 60 L25 80 M70 61 L75 80" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  lunge: `<svg viewBox="0 0 100 100"><circle cx="50" cy="18" r="9" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M50 27 L48 55 M48 55 L30 85 M48 55 L70 70 L70 90 M40 35 L25 45 M55 35 L65 45" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  calf: `<svg viewBox="0 0 100 100"><circle cx="50" cy="20" r="9" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M50 29 L50 60 M50 60 L40 88 M50 60 L60 88 M40 88 L36 92 M60 88 L64 92" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  superman: `<svg viewBox="0 0 100 100"><circle cx="20" cy="50" r="8" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M28 50 L80 48 M35 48 L15 35 M65 48 L88 40" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  lateral: `<svg viewBox="0 0 100 100"><circle cx="45" cy="20" r="9" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M45 29 L45 60 M45 60 L35 90 M45 60 L75 65 M35 38 L20 45 M55 38 L68 30" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  bicycle: `<svg viewBox="0 0 100 100"><circle cx="20" cy="30" r="8" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M25 35 L55 45 M35 45 L20 60 M55 45 L75 35 M55 45 L70 65" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  dip: `<svg viewBox="0 0 100 100"><circle cx="45" cy="22" r="9" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M45 31 L45 55 M45 55 L30 75 M45 55 L65 75 M35 45 L20 55 M55 45 L20 40" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  curl: `<svg viewBox="0 0 100 100"><circle cx="50" cy="20" r="9" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M50 29 L50 60 M50 60 L38 88 M50 60 L62 88 M50 40 L30 30 M50 40 L70 30" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  press: `<svg viewBox="0 0 100 100"><circle cx="50" cy="20" r="9" fill="none" stroke="#8FA381" stroke-width="4"/><path d="M50 29 L50 60 M50 60 L38 88 M50 60 L62 88 M50 40 L30 40 M50 40 L70 40" stroke="#8FA381" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`
+};
+
+/* ============ ESTADO ============ */
+let state = {
+  phase: null,
+  circuit: [],
+  round: 1,
+  totalRounds: 3,
+  exIndex: 0,
+  mode: "work", // work | rest
+  seconds: 30,
+  totalSeconds: 30,
+  timerHandle: null,
+  paused: false
+};
+
+const PREP_SECONDS = 5;
+
+/* ============ SETUP SCREEN ============ */
+const weekGrid = document.getElementById('weekGrid');
+Object.keys(PHASES).forEach(key => {
+  const p = PHASES[key];
+  const btn = document.createElement('button');
+  btn.className = 'week-btn';
+  btn.innerHTML = `Fase ${key}<span class="phase-label">${p.label.split('·')[1].trim()}</span>`;
+  btn.onclick = () => startPhase(key);
+  weekGrid.appendChild(btn);
+});
+
+function startPhase(key){
+  const p = PHASES[key];
+  state.phase = key;
+  state.circuit = p.circuit;
+  state.totalRounds = p.rounds;
+  state.round = 1;
+  state.exIndex = 0;
+  document.getElementById('phaseTag').textContent = p.label;
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('session').classList.remove('active');
+  document.getElementById('done').classList.remove('active');
+  buildRoundDots();
+  showPrep(state.circuit[0], () => loadExercise());
+}
+
+function showPrep(exKey, onDone){
+  document.getElementById('session').classList.remove('active');
+  document.getElementById('prep').classList.add('active');
+  document.getElementById('prepNext').textContent = EX[exKey].name;
+  let n = PREP_SECONDS;
+  document.getElementById('prepNum').textContent = n;
+  clearInterval(state.timerHandle);
+  state.timerHandle = setInterval(() => {
+    n--;
+    if(n <= 0){
+      clearInterval(state.timerHandle);
+      document.getElementById('prep').classList.remove('active');
+      document.getElementById('session').classList.add('active');
+      onDone();
+      return;
+    }
+    document.getElementById('prepNum').textContent = n;
+  }, 1000);
+}
+
+function buildRoundDots(){
+  const wrap = document.getElementById('roundIndicator');
+  wrap.innerHTML = '';
+  for(let i=1; i<=state.totalRounds; i++){
+    const d = document.createElement('div');
+    d.className = 'round-dot' + (i < state.round ? ' done' : i === state.round ? ' current' : '');
+    wrap.appendChild(d);
+  }
+}
+
+/* ============ SESSION LOGIC ============ */
+function loadExercise(){
+  const p = PHASES[state.phase];
+  const exKey = state.circuit[state.exIndex];
+  const ex = EX[exKey];
+
+  document.getElementById('exName').textContent = ex.name;
+  document.getElementById('exSub').textContent = ex.sub;
+  document.getElementById('exCue').textContent = ex.cue;
+  document.getElementById('silhouette').innerHTML = POSES[ex.pose] || '';
+
+  const nextKey = state.circuit[state.exIndex + 1];
+  if(nextKey){
+    document.getElementById('nextUp').innerHTML = `Siguiente: <b>${EX[nextKey].name}</b>`;
+  } else if(state.round < state.totalRounds) {
+    document.getElementById('nextUp').innerHTML = `Siguiente: <b>Ronda ${state.round+1} — ${EX[state.circuit[0]].name}</b>`;
+  } else {
+    document.getElementById('nextUp').innerHTML = `Última serie de la sesión`;
+  }
+
+  state.mode = "work";
+  state.seconds = p.work;
+  state.totalSeconds = p.work;
+  updateTimerDisplay();
+  runTimer();
+}
+
+function runTimer(){
+  clearInterval(state.timerHandle);
+  state.timerHandle = setInterval(() => {
+    if(state.paused) return;
+    state.seconds--;
+    updateTimerDisplay();
+    if(state.seconds <= 0){
+      advance();
+    }
+  }, 1000);
+}
+
+function advance(){
+  const p = PHASES[state.phase];
+  if(state.mode === "work"){
+    // pasar a descanso
+    state.mode = "rest";
+    state.seconds = p.rest;
+    state.totalSeconds = p.rest;
+    updateTimerDisplay();
+    return;
+  }
+  // descanso terminado -> siguiente ejercicio
+  state.exIndex++;
+  if(state.exIndex >= state.circuit.length){
+    state.exIndex = 0;
+    state.round++;
+    if(state.round > state.totalRounds){
+      finishSession();
+      return;
+    }
+    buildRoundDots();
+  }
+  const nextKey = state.circuit[state.exIndex];
+  showPrep(nextKey, () => loadExercise());
+}
+
+function updateTimerDisplay(){
+  document.getElementById('timerNum').textContent = state.seconds;
+  document.getElementById('timerLabel').textContent = state.mode === "work" ? "esfuerzo" : "descanso";
+  const ring = document.getElementById('ringFg');
+  const frac = state.seconds / state.totalSeconds;
+  const circumference = 282.7;
+  ring.style.strokeDashoffset = circumference * (1 - frac);
+  ring.classList.toggle('rest', state.mode === "rest");
+}
+
+function finishSession(){
+  clearInterval(state.timerHandle);
+  document.getElementById('session').classList.remove('active');
+  document.getElementById('done').classList.add('active');
+}
+
+/* ============ CONTROLES ============ */
+document.getElementById('pauseBtn').onclick = (e) => {
+  state.paused = !state.paused;
+  e.target.textContent = state.paused ? "Reanudar" : "Pausa";
+};
+document.getElementById('skipBtn').onclick = () => {
+  clearInterval(state.timerHandle);
+  state.seconds = 0;
+  advance();
+};
+document.getElementById('backBtn').onclick = () => {
+  clearInterval(state.timerHandle);
+  document.getElementById('session').classList.remove('active');
+  document.getElementById('prep').classList.remove('active');
+  document.getElementById('setup').style.display = 'flex';
+  state.paused = false;
+  document.getElementById('pauseBtn').textContent = "Pausa";
+};
+document.getElementById('restartBtn').onclick = () => {
+  document.getElementById('done').classList.remove('active');
+  document.getElementById('setup').style.display = 'flex';
+};
+</script>
+</body>
+</html>
